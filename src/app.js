@@ -2,13 +2,17 @@ const express = require("express");
 const { authToken } = require("./middlewares/auth");
 const app = express();
 
-app.use("/user", authToken);
-
-app.get("/user/signup", (req, res) => {
-  res.send("Successful Signup");
+app.get("/user", (req, res) => {
+  try {
+    res.send("User");
+  } catch (err) {
+    res.status(500).send("Something went to wrong");
+  }
 });
-app.post("/user/dashboard", (req, res) => {
-  res.send("Dashboard Open");
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Something went to wrong");
+  }
 });
 
 app.listen(7777, () => {
