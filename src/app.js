@@ -6,14 +6,7 @@ const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const { firstName, lastName, emailId, password } = req.body;
-  const user = new User({
-    firstName,
-    lastName,
-    emailId,
-    password,
-  });
-
+  const user = new User(req.body);
   try {
     await user.save();
     res.send("User created Successfully");
@@ -43,15 +36,19 @@ app.delete("/user", async (req, res) => {
 });
 
 app.patch("/user", async (req, res) => {
-  const { _id, password } = req.body;
+  const _id = req.body._id;
+  const data = req.body;
   try {
-    console.log(_id, password);
-    await User.findByIdAndUpdate(_id, { $set: { password } });
+    await User.findByIdAndUpdate(_id, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     res.send("User update successfully");
   } catch (error) {
-    res.status(500).send("Something went to wrong ");
+    res.status(500).send("Something went to wrong while upating the profile ");
   }
 });
+
 connectDB()
   .then(() => {
     console.log("Database connect to established");
