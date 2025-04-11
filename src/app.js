@@ -22,6 +22,36 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.get("/feed", async (req, res) => {
+  try {
+    const emailId = req.body;
+    const userData = await User.findOne(emailId);
+    res.send(userData);
+  } catch (error) {
+    res.status(500).send("Something went to wrong ");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body;
+  try {
+    await User.findByIdAndDelete(userId);
+    res.send("User deleted Successfully");
+  } catch (error) {
+    res.status(500).send("Something went to wrong ");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const { _id, password } = req.body;
+  try {
+    console.log(_id, password);
+    await User.findByIdAndUpdate(_id, { $set: { password } });
+    res.send("User update successfully");
+  } catch (error) {
+    res.status(500).send("Something went to wrong ");
+  }
+});
 connectDB()
   .then(() => {
     console.log("Database connect to established");
