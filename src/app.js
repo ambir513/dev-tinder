@@ -1,19 +1,41 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/user");
-
+const { validation } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
+  const { firstName, lastName, emailId, password } = req.body;
+  const isUserExist = await User.findOne({ emailId: emailId });
+
   try {
-    const isExist = await User.findOne({ emailId: req.body?.emailId });
-    if (isExist) {
-      throw new Error("Email is already register to this " + req.body?.emailId);
-    }
+    validation(req, isUserExist);
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
     await user.save();
     res.send("User created Successfully");
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  const { emailId, password } = req.body;
+  const isUserExist = await User.findOne({ emailId: emailId });
+  try {
+    validation(req, isUserExist);
+    const isPaswordValid = await bcrypt.compare(password, isUserExist.password);
+    if (!isPaswordValid) {
+      throw new Error("Invalid Credentials");
+    }
+    res.send("successfully login");
   } catch (err) {
     res.status(400).send(err.message);
   }

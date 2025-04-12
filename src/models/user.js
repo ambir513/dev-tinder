@@ -9,10 +9,12 @@ const userSchema = new Schema(
       required: true,
       minLength: 3,
       maxLength: 20,
+      trim: true,
     },
     lastName: {
       type: String,
       required: true,
+      trim: true,
     },
     emailId: {
       type: String,
