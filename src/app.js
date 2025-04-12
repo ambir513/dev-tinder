@@ -8,10 +8,14 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
+    const isExist = await User.findOne({ emailId: req.body?.emailId });
+    if (isExist) {
+      throw new Error("Email is already register to this " + req.body?.emailId);
+    }
     await user.save();
     res.send("User created Successfully");
   } catch (err) {
-    res.status(400).send("Error while save in Database");
+    res.status(400).send(err.message);
   }
 });
 
