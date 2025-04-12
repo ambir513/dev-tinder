@@ -35,17 +35,33 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const _id = req.body._id;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const data = req.body;
   try {
-    await User.findByIdAndUpdate(_id, data, {
+    const ALLOWED_UPDATES = [
+      "age",
+      "gender",
+      "description",
+      "photoUrl",
+      "skills",
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+    if (data?.skills.length > 10) {
+      throw new Error("skills cannot be more than 10");
+    }
+    await User.findByIdAndUpdate(userId, data, {
       returnDocument: "after",
       runValidators: true,
     });
     res.send("User update successfully");
   } catch (error) {
-    res.status(500).send("Something went to wrong while upating the profile ");
+    res.status(500).send("UPDATE ERROR: " + error.message);
   }
 });
 
