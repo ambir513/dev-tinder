@@ -19,6 +19,25 @@ const userAuth = async (req, res, next) => {
   }
 };
 
+const isUserLoginOrNot = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    if (token) {
+      const decodedObj = await jwt.verify(token, "devTinder");
+      const userId = await User.findById(decodedObj._id);
+      if (userId) {
+        throw new Error("Your are already login");
+      }
+      res.cookie("token", null, {
+        expires: new Date(Date.now()),
+      });
+    }
+    next();
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
 module.exports = {
   userAuth,
+  isUserLoginOrNot,
 };
