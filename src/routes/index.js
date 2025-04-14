@@ -1,4 +1,5 @@
 const authRouter = require("./auth.js");
 const profileRouter = require("./profile.js");
-
-module.exports = { authRouter, profileRouter };
+const requestRouter = require("./request.js");
+const userRouter = require("./user.js");
+module.exports = { authRouter, profileRouter, requestRouter, userRouter };

@@ -17,7 +17,7 @@ const view = (req, res) => {
 
 const edit = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.user._id
     validateEditData(req);
     const isUpdate = await User.findByIdAndUpdate(userId, req.body, {
       returnDocument: true,
@@ -34,7 +34,7 @@ const edit = async (req, res) => {
 
 const password = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.user._id
     const { currentPassword, newPassword, confirmPassword } =
       validateEditPassword(req);
     const user = await User.findById(userId);
