@@ -72,7 +72,6 @@ const reviewStatus = async (req, res) => {
       toUserId: user._id,
       status: "interested",
     });
-
     if (!connectionRequest) {
       return res.status(400).json({ message: "Connection request not found" });
     }

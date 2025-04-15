@@ -14,13 +14,18 @@
 
 ## connectionRequestRouter
 
-- POST /request/send/interested/:userId
-- POST /request/send/ignore/:userId
-- POST /request/review/accepted/:requestId
-- POST /request/review/rejected/:requestId
+- POST /request/send/:status/:userId
+- POST /request/review/:status/:requestId
 
 ## userRouter
 
 - GET /user/connections
 - GET /user/request/received
 - GET /user/feed - GET you the profiles of the other user on platform
+
+## Pagination
+
+- page - 1
+- limti - 4
+- GET /feed?page=1&limit=4 so it GET only 4 User
+- => skip = (page-1)\*limit
