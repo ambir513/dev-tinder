@@ -18,6 +18,13 @@ const userSchema = new Schema(
       required: true,
       trim: true,
     },
+    userName: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     emailId: {
       type: String,
       required: true,
@@ -61,6 +68,12 @@ const userSchema = new Schema(
         }
       },
     },
+    postId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
     description: {
       type: String,
       default: "I'm user of devTinder!!",

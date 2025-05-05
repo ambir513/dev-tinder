@@ -1,5 +1,7 @@
 const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
+const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Types;
 
 const requestStatus = async (req, res) => {
   try {
@@ -7,7 +9,7 @@ const requestStatus = async (req, res) => {
     const toUserId = req.params.toUserId;
     const status = req.params.status;
 
-    const allowedStatus = ["interested", "ignore"];
+    const allowedStatus = ["interested", "ignored"];
     const isAllowedStatus = allowedStatus.includes(status);
 
     if (!isAllowedStatus) {
@@ -44,8 +46,7 @@ const requestStatus = async (req, res) => {
     });
     const data = await connectionRequest.save();
     res.json({
-      message:
-        req.user.firstName + " is " + status + " in " + isUserExist.firstName,
+      message: "Request send successfully",
       data,
     });
   } catch (error) {
@@ -68,7 +69,7 @@ const reviewStatus = async (req, res) => {
       });
     }
     const connectionRequest = await ConnectionRequest.findOne({
-      _id: requestId,
+      fromUserId: requestId,
       toUserId: user._id,
       status: "interested",
     });
@@ -78,7 +79,7 @@ const reviewStatus = async (req, res) => {
     connectionRequest.status = status;
     const data = await connectionRequest.save();
     res.json({
-      message: "Connection request " + status,
+      message: "Connection request",
       data,
     });
   } catch (error) {

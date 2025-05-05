@@ -6,7 +6,7 @@ const {
 } = require("../utils/validation.js");
 
 const signup = async (req, res) => {
-  const { firstName, lastName, emailId, password } = req.body;
+  const { firstName, lastName, userName, emailId, password } = req.body;
   const isUserExist = await User.findOne({ emailId: emailId });
   try {
     validationSignUpDate(req, isUserExist);
@@ -14,11 +14,12 @@ const signup = async (req, res) => {
     const user = new User({
       firstName,
       lastName,
+      userName,
       emailId,
       password: passwordHash,
     });
     await user.save();
-    res.send("User created Successfully");
+    res.json({ message: "User created Successfully" });
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -37,7 +38,7 @@ const login = async (req, res) => {
     res.cookie("token", token, {
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
-    res.send("successfully login");
+    res.json({ message: "Login Successfully", data: user });
   } catch (error) {
     res.status(401).send(error.message);
   }

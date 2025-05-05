@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
 
+const URL = process.env.MONGODB_KEY;
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://amarbiradar147:Biradar2006@namastenode.iawwfex.mongodb.net/devTinder"
-    );
+    await mongoose.connect(URL);
   } catch (error) {
     console.log("Something went to wrong");
   }

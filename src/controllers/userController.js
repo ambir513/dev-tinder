@@ -1,7 +1,8 @@
 const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
 
-const USER_FIELDS = "firstName lastName photoUrl age description skills";
+const USER_FIELDS =
+  "firstName lastName photoUrl age description skills emailId userName";
 
 const getAllRequest = async (req, res) => {
   try {
@@ -43,7 +44,6 @@ const getAllConnection = async (req, res) => {
       }
       return row.fromUserId;
     });
-    console.log(data);
     res.json({ message: "Connection Request Successfully", data: data });
   } catch (error) {
     res.status(400).send(error.message);

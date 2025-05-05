@@ -3,12 +3,14 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user.js");
 
 const validationSignUpDate = (req, isUserExist) => {
-  const { firstName, lastName, emailId, password } = req.body;
+  const { firstName, lastName, userName, emailId, password } = req.body;
 
   if (!firstName) {
     throw new Error("please enter your Name");
   } else if (!lastName) {
     throw new Error("please enter your LastName");
+  } else if (!userName) {
+    throw new Error("please enter your userName");
   } else if (!emailId) {
     throw new Error("please enter your Email");
   } else if (!password) {
@@ -42,6 +44,7 @@ const validateEditData = (req) => {
     "photoUrl",
     "description",
     "skills",
+    "avatar",
   ];
   const isEditAllowed = Object.keys(req.body).every((k) =>
     allowedEditFields.includes(k)
@@ -53,6 +56,7 @@ const validateEditData = (req) => {
 
 const validateEditPassword = (req) => {
   const allowedPasswordOnly = [
+    "emailId",
     "currentPassword",
     "newPassword",
     "confirmPassword",
@@ -63,7 +67,7 @@ const validateEditPassword = (req) => {
   if (!isAllowedThePassword) {
     throw new Error("invalid password edit fields");
   }
-  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const { emailId, currentPassword, newPassword, confirmPassword } = req.body;
   if (newPassword !== confirmPassword) {
     throw new Error("Password doesn't Match");
   } else if (
@@ -72,7 +76,7 @@ const validateEditPassword = (req) => {
   ) {
     throw new Error("New password must be different");
   }
-  return { currentPassword, newPassword, confirmPassword };
+  return { emailId, currentPassword, newPassword, confirmPassword };
 };
 
 module.exports = {

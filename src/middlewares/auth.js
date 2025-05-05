@@ -5,10 +5,12 @@ const userAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) {
-      throw new Error("invalid cookies");
+      return res.status(401).send("Please login now");
     }
     const decodedObj = await jwt.verify(token, "devTinder");
-    const user = await User.findById(decodedObj._id);
+    const user = await User.findById(decodedObj._id)
+      .populate("postId", "photoUrl caption")
+      .select("-password");
     if (!user) {
       throw new Error("User is not found");
     }
