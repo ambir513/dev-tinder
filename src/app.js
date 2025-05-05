@@ -25,13 +25,14 @@ app.use("/account", profileRouter);
 app.use("/request", requestRouter);
 app.use("/user", userRouter);
 
+const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 initializeSocket(server);
 
 connectDB()
   .then(() => {
     console.log("Database connect to established");
-    server.listen(7777, () => {
+    server.listen(PORT, () => {
       console.log("Server is running on PORT 7777");
     });
   })
