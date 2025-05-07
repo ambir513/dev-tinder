@@ -10,7 +10,7 @@ const getHashAuth = (userId, _id) => {
 const initializeSocket = (server) => {
   const io = Socket(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: "https://dev-tinder-ggrn.onrender.com",
     },
   });
 
