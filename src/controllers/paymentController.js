@@ -65,16 +65,18 @@ const webhook = async (req, res) => {
 
     const paymentDetails = req.body.payload.payment.entity;
     const payment = await Payment.findOne({
-      orderId: paymentDetails._id,
+      razorpayOrderId: paymentDetails.order_id,
     });
 
     payment.status = paymentDetails.status;
     await payment.save();
 
     const user = await User.findOne({ _id: payment.userId });
+    if (user) {
     user.isPremium = true;
     user.membershipType = payment.notes.membership;
     await user.save();
+    }
     // if (req.body.event == "payment.captured") {
     // }
 
