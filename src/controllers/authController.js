@@ -49,6 +49,9 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   res.cookie("token", null, {
+    httpOnly: true,
+  secure: true,
+  sameSite: 'None',
     expires: new Date(Date.now()),
   });
   res.send("Successfully logout");
