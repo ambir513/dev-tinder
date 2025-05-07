@@ -8,6 +8,7 @@ const {
   profileRouter,
   requestRouter,
   userRouter,
+  paymentRouter,
 } = require("./routes/index.js");
 const initializeSocket = require("./utils/socket.js");
 
@@ -24,8 +25,9 @@ app.use("/", authRouter);
 app.use("/account", profileRouter);
 app.use("/request", requestRouter);
 app.use("/user", userRouter);
+app.use("/payment", paymentRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 7777;
 const server = http.createServer(app);
 initializeSocket(server);
 
@@ -33,7 +35,7 @@ connectDB()
   .then(() => {
     console.log("Database connect to established");
     server.listen(PORT, () => {
-      console.log("Server is running on PORT 7777");
+      console.log("Server is running on PORT " + PORT);
     });
   })
   .catch((err) => {
