@@ -36,6 +36,9 @@ const login = async (req, res) => {
     }
     const token = await user.getJWT();
     res.cookie("token", token, {
+      httpOnly: true,
+  secure: true,
+  sameSite: 'None',
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     res.json({ message: "Login Successfully", data: user });
