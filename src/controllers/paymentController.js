@@ -64,9 +64,10 @@ const webhook = async (req, res) => {
     // Update the User as premium
 
     const paymentDetails = req.body.payload.payment.entity;
-    const payment = await Payment.findOne({
-      razorpayOrderId: paymentDetails.order_id,
-    });
+    console.log("Looking for orderId:", paymentDetails.order_id);
+   const payment = await Payment.findOne({
+  orderId: paymentDetails.order_id,
+});
     console.log("Payment found:", payment);
 
     payment.status = paymentDetails.status;
