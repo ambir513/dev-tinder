@@ -67,11 +67,13 @@ const webhook = async (req, res) => {
     const payment = await Payment.findOne({
       razorpayOrderId: paymentDetails.order_id,
     });
+    console.log("Payment found:", payment);
 
     payment.status = paymentDetails.status;
     await payment.save();
 
     const user = await User.findOne({ _id: payment.userId });
+    console.log("User found:", user);
     if (user) {
     user.isPremium = true;
     user.membershipType = payment.notes.membership;
