@@ -2,7 +2,7 @@ const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
 
 const USER_FIELDS =
-  "firstName lastName photoUrl age description skills emailId userName ";
+  "firstName lastName photoUrl age description skills emailId userName isPremium membershipType";
 
 const getAllRequest = async (req, res) => {
   try {

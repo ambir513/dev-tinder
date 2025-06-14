@@ -57,6 +57,9 @@ const login = async (req, res) => {
 
     const token = await user.getJWT();
     res.cookie("token", token, {
+      httpOnly: true,
+  secure: true,
+  sameSite: 'None',
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     res.json({ message: "Login Successfully", data: user });
@@ -67,6 +70,9 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   res.cookie("token", null, {
+    httpOnly: true,
+  secure: true,
+  sameSite: 'None',
     expires: new Date(Date.now()),
   });
   res.send("Successfully logout");

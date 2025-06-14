@@ -64,14 +64,21 @@ const webhook = async (req, res) => {
     // Update the User as premium
 
     const paymentDetails = req.body.payload.payment.entity;
+    console.log("Looking for orderId:", paymentDetails.order_id);
     const payment = await Payment.findOne({
-      orderId: paymentDetails._id,
+      orderId: paymentDetails.order_id,
     });
+    console.log("Payment found:", payment);
 
     payment.status = paymentDetails.status;
     await payment.save();
 
-    const user = await User.findOne({ _id: payment.userId });
+    const user = await User.findById(payment.userId);
+    if (!user) {
+      console.error("❌ User not found:", payment.userId);
+      return;
+    }
+
     user.isPremium = true;
     user.membershipType = payment.notes.membership;
     await user.save();
