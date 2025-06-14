@@ -2,6 +2,7 @@ const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
+const sendEmail = require("../utils/sendEmail.js");
 
 const requestStatus = async (req, res) => {
   try {
@@ -45,6 +46,12 @@ const requestStatus = async (req, res) => {
       status,
     });
     const data = await connectionRequest.save();
+    const emailRes = await sendEmail.run(
+      "A new frient request " + req.user.firstName,
+      "Hiii new "
+    );
+    console.log(emailRes);
+
     res.json({
       message: "Request send successfully",
       data,

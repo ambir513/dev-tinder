@@ -88,6 +88,9 @@ const userSchema = new Schema(
     membershipType: {
       type: String,
     },
+    verify: {
+      type: Boolean,
+    },
   },
   {
     timestamps: true,

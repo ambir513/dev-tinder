@@ -42,9 +42,9 @@ const createOrder = async (req, res) => {
 const paymentVerify = async (req, res) => {
   const user = req.user;
   if (user.isPremium) {
-    return res.json({ isPremium: true });
+    return res.json(user);
   }
-  return res.json({ isPremium: false });
+  return res.json(user);
 };
 
 const webhook = async (req, res) => {

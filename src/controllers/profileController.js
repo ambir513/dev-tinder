@@ -5,6 +5,7 @@ const {
   validateEditData,
   validateEditPassword,
 } = require("../utils/validation.js");
+const nodemailer = require("nodemailer");
 
 const view = (req, res) => {
   try {
@@ -45,7 +46,7 @@ const edit = async (req, res) => {
   }
 };
 
-const password = async (req, res) => {
+const verify = async (req, res) => {
   try {
     const { emailId, currentPassword, newPassword, confirmPassword } =
       validateEditPassword(req);
@@ -61,22 +62,33 @@ const password = async (req, res) => {
     if (!isCurrentPassword) {
       throw new Error("Current Password is Incorrect");
     }
-    const newHashPassword = await bcrypt.hash(newPassword, 10);
-    const isUpdateUserPassword = await User.findByIdAndUpdate(
-      user._id,
-      {
-        password: newHashPassword,
+
+    let otp = Math.floor(1000 + Math.random() * 9000);
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
-      {
-        runValidators: true,
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: emailId,
+      subject: "Cron Test Email",
+      text: "OTP is " + otp,
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Email send failed:", error);
+      } else {
+        console.log("Email sent:", info.response);
       }
-    );
-    if (!isUpdateUserPassword) {
-      throw new Error("Password is not updated");
-    }
-    res.json({ message: "Password successfully update" });
+    });
+
+    res.json({ message: "OTP send successfully", data: otp });
   } catch (error) {
-    res.status(401).send(error.message);
+    res.status(401).json({ message: error.message });
   }
 };
 
@@ -129,4 +141,44 @@ const userName = async (req, res) => {
   }
 };
 
-module.exports = { view, edit, password, post, userName };
+const password = async (req, res) => {
+  try {
+    const { emailId, currentPassword, newPassword, confirmPassword, value } =
+      validateEditPassword(req);
+    const user = await User.findOne({ emailId });
+    if (!user) {
+      throw new Error("User is not found");
+    }
+    const isCurrentPassword = await user.validatePassword(currentPassword);
+    const isNewPassword = await user.validatePassword(newPassword);
+    if (isNewPassword) {
+      throw new Error("Password could not be same");
+    }
+    if (!isCurrentPassword) {
+      throw new Error("Current Password is Incorrect");
+    }
+
+    if (value !== "success") {
+      res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    const newHashPassword = await bcrypt.hash(newPassword, 10);
+    const isUpdateUserPassword = await User.findByIdAndUpdate(
+      user._id,
+      {
+        password: newHashPassword,
+      },
+      {
+        runValidators: true,
+      }
+    );
+    if (!isUpdateUserPassword) {
+      throw new Error("Password is not updated");
+    }
+    res.json({ message: "Password successfully update" });
+  } catch (error) {
+    res.status(402).json({ message: error.message });
+  }
+};
+
+module.exports = { view, edit, password, post, userName, verify };

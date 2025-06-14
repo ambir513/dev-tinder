@@ -21,6 +21,7 @@ app.use(
     credentials: true,
   })
 );
+require("./utils/cronjob.js");
 app.use("/", authRouter);
 app.use("/account", profileRouter);
 app.use("/request", requestRouter);
