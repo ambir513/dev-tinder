@@ -9,7 +9,7 @@ const paymentSchema = new Schema(
       required: true,
     },
     paymentId: {
-      type: String, 
+      type: String,
     },
     orderId: {
       type: String,
@@ -40,6 +40,7 @@ const paymentSchema = new Schema(
       },
       membership: {
         type: String,
+        default: "free",
       },
     },
   },

@@ -86,10 +86,8 @@ const userSchema = new Schema(
       default: false,
     },
     membershipType: {
+      default: "free",
       type: String,
-    },
-    verify: {
-      type: Boolean,
     },
   },
   {
