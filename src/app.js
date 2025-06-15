@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "https://devtinder.web.app",
+    origin: "http://thedevtinder.xyz",
     credentials: true,
   })
 );
