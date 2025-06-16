@@ -3,10 +3,11 @@ const { userAuth } = require("../middlewares/auth.js");
 const {
   view,
   edit,
-  password,
+  verifyPassword,
   post,
   userName,
   verify,
+  newPassword,
 } = require("../controllers/profileController.js");
 const uploadMiddleware = require("../config/multer.js");
 const upload = uploadMiddleware("avatar");
@@ -17,7 +18,8 @@ profileRouter.get("/view", userAuth, view);
 profileRouter.patch("/edit", userAuth, upload.single("avatar"), edit);
 profileRouter.post("/post/upload", userAuth, upload.single("avatar"), post);
 profileRouter.post("/password/verify", verify);
-profileRouter.patch("/password/reset", password);
+profileRouter.post("/verifyPassword", verifyPassword);
+profileRouter.post("/newPassword", newPassword);
 profileRouter.get("/:userName", userName);
 
 module.exports = profileRouter;

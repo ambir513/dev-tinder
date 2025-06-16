@@ -57,9 +57,7 @@ const validateEditData = (req) => {
 const validateEditPassword = (req) => {
   const allowedPasswordOnly = [
     "emailId",
-    "currentPassword",
-    "newPassword",
-    "confirmPassword",
+    "currentPassword"
   ];
   const isAllowedThePassword = Object.keys(req.body).every((k) =>
     allowedPasswordOnly.includes(k)
@@ -67,16 +65,8 @@ const validateEditPassword = (req) => {
   if (!isAllowedThePassword) {
     throw new Error("invalid password edit fields");
   }
-  const { emailId, currentPassword, newPassword, confirmPassword } = req.body;
-  if (newPassword !== confirmPassword) {
-    throw new Error("Password doesn't Match");
-  } else if (
-    currentPassword === newPassword ||
-    currentPassword === confirmPassword
-  ) {
-    throw new Error("New password must be different");
-  }
-  return { emailId, currentPassword, newPassword, confirmPassword };
+  const { emailId, currentPassword } = req.body;
+  return { emailId, currentPassword };
 };
 
 module.exports = {

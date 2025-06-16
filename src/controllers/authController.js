@@ -194,6 +194,90 @@ const sentotp = async (req, res) => {
   }
 };
 
+const forgetotp = async (req, res) => {
+  const { emailId } = req.body;
+  const isUserExist = await User.findOne({ emailId: emailId });
+  try {
+    if (!isUserExist) {
+      return res.status(402).json({
+        message: "Email is Not Found",
+      });
+    }
+    let newOTP = Math.floor(100000 + Math.random() * 900000);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: emailId,
+      subject: "Reset Your DevTinder Password – OTP Inside",
+      html: `
+  <div style="font-family: Arial, sans-serif; background-color: #f6f6f6;">
+    <table align="center" width="600" style="background-color: #ffffff; border-radius: 6px; overflow: hidden;">
+      <tr>
+        <td style="background-color: #242f3e; padding: 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0;">🧑‍💻 DevTinder</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 30px;">
+          <h2 style="color: #333333;">Your One-Time Password (OTP)</h2>
+          <p style="font-size: 16px; color: #555;">
+            Dear ${emailId},
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Your OTP for secure access is:
+          </p>
+          <p style="font-size: 24px; font-weight: bold; color: #242f3e; text-align: center; margin: 20px 0;">
+            ${newOTP}
+          </p>
+          <p style="font-size: 14px; color: #777;">
+            This OTP is valid for <strong>1 minutes</strong>. Please do not share it with anyone.
+          </p>
+          <p style="font-size: 14px; color: #777;">
+            If you didn’t request this, you can safely ignore this email.
+          </p>
+        </td>
+      </tr>
+     <tr>
+  <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
+    <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
+      Need help? Contact <a href="mailto:amarbiradar147@gmail.com">amarbiradar147@gmail.com</a>
+    </p>
+    <div style="margin-bottom: 10px;">
+      <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
+        <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" width="24" height="24" style="vertical-align: middle;">
+      </a>
+      <a href="https://wa.me/+918956817729" style="margin: 0 8px;" target="_blank">
+        <img src="https://cdn-icons-png.flaticon.com/24/733/733585.png" alt="WhatsApp" width="24" height="24" style="vertical-align: middle;">
+      </a>
+      <a href="https://twitter.com/ambir513" style="margin: 0 8px;" target="_blank">
+        <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" width="24" height="24" style="vertical-align: middle;">
+      </a>
+    </div>
+    <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} DevTinder, All rights reserved.</p>
+  </td>
+</tr>
+    </table>
+  </div>
+    `,
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Email send failed:", error);
+        return res
+          .status(401)
+          .json({ message: "Something went to wrong, try again" });
+      } else {
+        console.log("Email sent:", info.response);
+      }
+    });
+    console.log(newOTP);
+    const newOtp = new Otp({ emailId, otp: newOTP });
+    await newOtp.save();
+    return res.json({ message: "OTP Send Successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const login = async (req, res) => {
   const { emailId, password } = req.body;
   const user = await User.findOne({ emailId: emailId });
@@ -343,4 +427,4 @@ const verify = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, logout, verify, sentotp, resentotp };
+module.exports = { signup, login, logout, verify, sentotp, resentotp, forgetotp };

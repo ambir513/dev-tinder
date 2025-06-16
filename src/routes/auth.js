@@ -5,14 +5,16 @@ const {
   logout,
   verify,
   sentotp,
-  resentotp
+  resentotp,
+  forgetotp,
 } = require("../controllers/authController.js");
 const { isUserLoginOrNot } = require("../middlewares/auth.js");
 const authRouter = express.Router();
- 
-authRouter.post("/signup", isUserLoginOrNot, signup); 
-authRouter.post("/sentotp", isUserLoginOrNot, sentotp); 
-authRouter.post("/resentotp", isUserLoginOrNot, resentotp); 
+
+authRouter.post("/signup", isUserLoginOrNot, signup);
+authRouter.post("/sentotp", isUserLoginOrNot, sentotp);
+authRouter.post("/resentotp", isUserLoginOrNot, resentotp);
+authRouter.post("/forgetotp", isUserLoginOrNot, forgetotp);
 authRouter.post("/verify", isUserLoginOrNot, verify);
 authRouter.post("/login", isUserLoginOrNot, login);
 authRouter.post("/logout", logout);

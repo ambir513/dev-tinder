@@ -141,27 +141,24 @@ const userName = async (req, res) => {
   }
 };
 
-const password = async (req, res) => {
+const verifyPassword = async (req, res) => {
   try {
-    const { emailId, currentPassword, newPassword, confirmPassword, value } =
-      validateEditPassword(req);
+    const { emailId } = req.body;
     const user = await User.findOne({ emailId });
     if (!user) {
-      throw new Error("User is not found");
+      throw new Error("Email is not found");
     }
-    const isCurrentPassword = await user.validatePassword(currentPassword);
+    res.json({ message: "All set", status: "SUCCESS" });
+  } catch (error) {
+    res.status(402).json({ message: error.message });
+  }
+};
+
+const newPassword = async (req, res) => {
+  const { emailId, newPassword, confirmPassword } = req.body;
+  try {
+    const user = await User.findOne({ emailId });
     const isNewPassword = await user.validatePassword(newPassword);
-    if (isNewPassword) {
-      throw new Error("Password could not be same");
-    }
-    if (!isCurrentPassword) {
-      throw new Error("Current Password is Incorrect");
-    }
-
-    if (value !== "success") {
-      res.status(401).json({ message: "Invalid OTP" });
-    }
-
     const newHashPassword = await bcrypt.hash(newPassword, 10);
     const isUpdateUserPassword = await User.findByIdAndUpdate(
       user._id,
@@ -175,10 +172,18 @@ const password = async (req, res) => {
     if (!isUpdateUserPassword) {
       throw new Error("Password is not updated");
     }
-    res.json({ message: "Password successfully update" });
+    res.json({ message: "Password Updated Successfully" });
   } catch (error) {
     res.status(402).json({ message: error.message });
   }
 };
 
-module.exports = { view, edit, password, post, userName, verify };
+module.exports = {
+  view,
+  edit,
+  verifyPassword,
+  newPassword,
+  post,
+  userName,
+  verify,
+};
