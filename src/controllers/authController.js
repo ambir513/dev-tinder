@@ -21,8 +21,9 @@ const signup = async (req, res) => {
   const isUserExist = await User.findOne({ emailId: emailId });
   try {
     if (isUserExist) {
-      return res.status(402).json({
+      return res.json({
         message: "Email is already register",
+        status: false,
       });
     }
 
@@ -104,7 +105,7 @@ const signup = async (req, res) => {
         console.log("Email sent:", info.response);
       }
     });
-    res.json({ message: "Created Successfully login now" });
+    res.json({ message: "Created Successfully login now", status: true });
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -117,6 +118,7 @@ const sentotp = async (req, res) => {
     if (isUserExist) {
       return res.status(402).json({
         message: "Email is already register",
+        status: false,
       });
     }
     let newOTP = Math.floor(100000 + Math.random() * 900000);
@@ -188,7 +190,7 @@ const sentotp = async (req, res) => {
     console.log(newOTP);
     const newOtp = new Otp({ emailId, otp: newOTP });
     await newOtp.save();
-    return res.json({ message: "OTP Send Successfully" });
+    return res.json({ message: "OTP Send Successfully", status: true });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -297,7 +299,7 @@ const login = async (req, res) => {
     });
     res.json({ message: "Logged Successfully", data: user });
   } catch (error) {
-    res.status(401).send(error.message);
+    res.status(401).json({ message: error.message, status: false });
   }
 };
 
@@ -427,4 +429,12 @@ const verify = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, logout, verify, sentotp, resentotp, forgetotp };
+module.exports = {
+  signup,
+  login,
+  logout,
+  verify,
+  sentotp,
+  resentotp,
+  forgetotp,
+};

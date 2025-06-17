@@ -6,7 +6,7 @@ const {
   verify,
   sentotp,
   resentotp,
-  forgetotp,
+  forgetotp
 } = require("../controllers/authController.js");
 const { isUserLoginOrNot } = require("../middlewares/auth.js");
 const authRouter = express.Router();

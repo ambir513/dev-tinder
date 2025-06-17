@@ -177,6 +177,26 @@ const newPassword = async (req, res) => {
     res.status(402).json({ message: error.message });
   }
 };
+const oauth = async (req, res) => {
+  const { photoUrl } = req.body;
+  const userToken = req.user;
+  try {
+    const user = await User.findByIdAndUpdate(
+      { _id: userToken?.id },
+      { photoUrl },
+      { new: true }
+    );
+
+    if (user) {
+      await user.save();
+      res.json({ message: "Logged Successfully", data: user });
+    } else {
+      res.status(401).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(401).send(error.message);
+  }
+};
 
 module.exports = {
   view,
@@ -186,4 +206,5 @@ module.exports = {
   post,
   userName,
   verify,
+  oauth,
 };

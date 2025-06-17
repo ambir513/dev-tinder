@@ -55,10 +55,7 @@ const validateEditData = (req) => {
 };
 
 const validateEditPassword = (req) => {
-  const allowedPasswordOnly = [
-    "emailId",
-    "currentPassword"
-  ];
+  const allowedPasswordOnly = ["emailId", "currentPassword"];
   const isAllowedThePassword = Object.keys(req.body).every((k) =>
     allowedPasswordOnly.includes(k)
   );
