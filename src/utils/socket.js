@@ -9,9 +9,9 @@ const getHashAuth = (userId, _id) => {
 };
 const initializeSocket = (server) => {
   const io = Socket(server, {
-    path: "/socket.io",
+    path: "/api/socket.io",
     cors: {
-      origin: "http://thedevtinder.xyz",
+      origin: "https://thedevtinder.xyz",
       credentials: true,
     },
   });
