@@ -75,10 +75,10 @@ const signup = async (req, res) => {
             If you didn’t create this account, please contact us immediately.
           </p>
         </td>
-      </tr>
+      </tr> 
       <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
-      Need help? Contact <a href="mailto:amarbiradar147@gmail.com">amarbiradar147@gmail.com</a>
+      Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
     </p>
     <div style="margin-bottom: 10px;">
       <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
@@ -157,7 +157,7 @@ const sentotp = async (req, res) => {
      <tr>
   <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
-      Need help? Contact <a href="mailto:amarbiradar147@gmail.com">amarbiradar147@gmail.com</a>
+      Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
     </p>
     <div style="margin-bottom: 10px;">
       <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
@@ -241,7 +241,7 @@ const forgetotp = async (req, res) => {
      <tr>
   <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
-      Need help? Contact <a href="mailto:amarbiradar147@gmail.com">amarbiradar147@gmail.com</a>
+      Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
     </p>
     <div style="margin-bottom: 10px;">
       <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
@@ -358,7 +358,7 @@ const resentotp = async (req, res) => {
     <tr>
       <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
         <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
-          Need help? Contact <a href="mailto:amarbiradar147@gmail.com">amarbiradar147@gmail.com</a>
+          Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
         </p>
         <div style="margin-bottom: 10px;">
           <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">

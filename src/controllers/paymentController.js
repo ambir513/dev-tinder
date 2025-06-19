@@ -81,6 +81,8 @@ const webhook = async (req, res) => {
 
     user.isPremium = true;
     user.membershipType = payment.notes.membership;
+    console.log(user.membershipType);
+    console.log(payment.notes.membership);
     await user.save();
     // if (req.body.event == "payment.captured") {
     // }
