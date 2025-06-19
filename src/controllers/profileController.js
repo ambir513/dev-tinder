@@ -65,7 +65,9 @@ const verify = async (req, res) => {
 
     let otp = Math.floor(1000 + Math.random() * 9000);
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "mail.privateemail.com",
+      port: 465, // Use 465 for SSL (secure)
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,

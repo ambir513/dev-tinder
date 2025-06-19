@@ -7,7 +7,9 @@ const sendEmail = require("../utils/sendEmail.js");
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "mail.privateemail.com",
+  port: 465, // Use 465 for SSL (secure)
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
