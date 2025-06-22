@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   port: 465, // Use 465 for SSL (secure)
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER2,
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
@@ -101,7 +101,7 @@ const webhook = async (req, res) => {
       const paymentId = req.body.payload.payment.entity.id;
 
       const mailOptions = {
-        from: process.env.EMAIL_USER2,
+        from: process.env.EMAIL_USER,
         to: emailId,
         subject: "🎉 Payment Successful - DevTinder Membership",
         html: `
@@ -176,7 +176,7 @@ const webhook = async (req, res) => {
         req.body.payload.payment.entity.error_reason || "Unknown reason";
 
       const mailOptions = {
-        from: process.env.EMAIL_USER2,
+        from: process.env.EMAIL_USER,
         to: emailId,
         subject: "⚠️ Payment Failed - DevTinder Membership",
         html: `
