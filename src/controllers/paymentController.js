@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   port: 465, // Use 465 for SSL (secure)
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
+    user: process.env.EMAIL_USER2,
     pass: process.env.EMAIL_PASS,
   },
 });
@@ -95,23 +95,13 @@ const webhook = async (req, res) => {
     console.log(user.membershipType);
     console.log(payment.notes.membership);
     await user.save();
-    const event = req.body.event;
-    const paymentEntity = req.body.payload?.payment?.entity;
+    if (req.body.event === "payment.captured") {
+      const { email: emailId } = req.body.payload.payment.entity;
+      const amount = req.body.payload.payment.entity.amount / 100;
+      const paymentId = req.body.payload.payment.entity.id;
 
-    if (!paymentEntity || !paymentEntity.email) {
-      console.warn("❌ Missing payment entity or email.");
-      return;
-    }
-
-    const emailId = paymentEntity.email;
-    const amount = paymentEntity.amount / 100;
-    const paymentId = paymentEntity.id;
-
-    let mailOptions = null;
-
-    if (event === "payment.captured") {
-      mailOptions = {
-        from: process.env.EMAIL_USER,
+      const mailOptions = {
+        from: process.env.EMAIL_USER2,
         to: emailId,
         subject: "🎉 Payment Successful - DevTinder Membership",
         html: `
@@ -165,10 +155,27 @@ const webhook = async (req, res) => {
   </div>
     `,
       };
-    } else if (event === "payment.failed") {
-      const reason = paymentEntity.error_reason || "Unknown reason";
-      mailOptions = {
-        from: process.env.EMAIL_USER,
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email send failed:", error);
+          return res
+            .status(500)
+            .json({ message: "Payment succeeded, but email failed to send." });
+        } else {
+          console.log("Payment confirmation email sent:", info.response);
+        }
+      });
+    }
+    if (req.body.event === "payment.failed") {
+      const { email: emailId } = req.body.payload.payment.entity;
+      const amount = req.body.payload.payment.entity.amount / 100; // convert paise to INR
+      const paymentId = req.body.payload.payment.entity.id;
+      const reason =
+        req.body.payload.payment.entity.error_reason || "Unknown reason";
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER2,
         to: emailId,
         subject: "⚠️ Payment Failed - DevTinder Membership",
         html: `
@@ -226,15 +233,14 @@ const webhook = async (req, res) => {
   </div>
     `,
       };
-    }
 
-    if (mailOptions) {
-      try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`${event} email sent to ${emailId}:`, info.response);
-      } catch (err) {
-        console.error(`${event} email failed for ${emailId}:`, err);
-      }
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Payment failure email send failed:", error);
+        } else {
+          console.log("Payment failure email sent:", info.response);
+        }
+      });
     }
 
     return res.status(200).json({ message: "Webhook received successfully" });
