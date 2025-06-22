@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   port: 465, // Use 465 for SSL (secure)
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER2,
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
@@ -123,7 +123,7 @@ const webhook = async (req, res) => {
     // Compose Email
     const amountINR = amount / 100;
     const emailTemplate = {
-      from: process.env.EMAIL_USER2,
+      from: process.env.EMAIL_USER,
       to: emailId,
       subject:
         event === "payment.captured"
