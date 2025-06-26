@@ -61,159 +61,191 @@ const paymentVerify = async (req, res) => {
 const webhook = async (req, res) => {
   try {
     const webhookSignature = req.get("X-Razorpay-Signature");
-    const rawBody = JSON.stringify(req.body);
-
-    // Validate Signature
     const isWebhookValid = validateWebhookSignature(
-      rawBody,
+      JSON.stringify(req.body),
       webhookSignature,
       process.env.RAZORPAY_WEBHOOK_SECRET
     );
 
     if (!isWebhookValid) {
-      console.warn("❌ Invalid webhook signature");
-      return res.status(400).json({ message: "Invalid signature" });
+      return res.status(400).json({ message: "Webhook signature is invalid" });
     }
 
-    const event = req.body.event;
+    // update my payment status in DB
+    // Update the User as premium
+
     const paymentDetails = req.body.payload.payment.entity;
-    const {
-      order_id,
-      id: paymentId,
-      status,
-      amount,
-      email: emailId,
-      error_reason,
-    } = paymentDetails;
+    console.log("Looking for orderId:", paymentDetails.order_id);
+    const payment = await Payment.findOne({
+      orderId: paymentDetails.order_id,
+    });
+    console.log("Payment found:", payment);
 
-    console.log(
-      `[Webhook] Event: ${event}, Payment ID: ${paymentId}, Order ID: ${order_id}`
-    );
-
-    // Find payment record
-    const payment = await Payment.findOne({ orderId: order_id });
-    if (!payment) {
-      console.error("❌ Payment not found for orderId:", order_id);
-      return res.status(404).json({ message: "Payment record not found" });
-    }
-
-    // Avoid double processing
-    if (payment.status === "captured" && event === "payment.captured") {
-      return res.status(200).json({ message: "Already processed" });
-    }
-
-    // Update payment status
-    payment.status = status;
+    payment.status = paymentDetails.status;
     await payment.save();
 
-    // Find user
     const user = await User.findById(payment.userId);
     if (!user) {
       console.error("❌ User not found:", payment.userId);
-      return res.status(404).json({ message: "User not found" });
+      return;
     }
 
-    // Mark user as premium
-    if (event === "payment.captured") {
-      user.isPremium = true;
-      user.membershipType = payment.notes?.membership || "basic";
-      await user.save();
+    user.isPremium = true;
+    user.membershipType = payment.notes.membership;
+    console.log(user.membershipType);
+    console.log(payment.notes.membership);
+    await user.save();
+    if (req.body.event === "payment.captured") {
+      const { email: emailId } = req.body.payload.payment.entity;
+      const amount = req.body.payload.payment.entity.amount / 100;
+      const paymentId = req.body.payload.payment.entity.id;
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: emailId,
+        subject: "🎉 Payment Successful - DevTinder Membership",
+        html: `
+  <div style="font-family: Arial, sans-serif; background-color: #f6f6f6;">
+    <table align="center" width="600" style="background-color: #ffffff; border-radius: 6px; overflow: hidden;">
+      <tr>
+        <td style="background-color: #242f3e; padding: 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0;">🧑‍💻 DevTinder</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 30px;">
+          <h2 style="color: #333333;">Payment Confirmed</h2>
+          <p style="font-size: 16px; color: #555;">
+            Hello ${emailId},
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Thank you for your payment of <strong>₹${amount}</strong>! Your DevTinder membership has been successfully activated.
+          </p>
+          <p style="font-size: 14px; color: #555;">
+            <strong>Payment ID:</strong> ${paymentId}
+          </p>
+          <p style="font-size: 14px; color: #555;">
+            You can now explore and connect with developers around the world. 🚀
+          </p>
+          <p style="font-size: 14px; color: #777;">
+            If you did not make this payment or have any concerns, please contact us immediately.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
+            Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
+          </p>
+          <div style="margin-bottom: 10px;">
+            <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://wa.me/+918956817729" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/733/733585.png" alt="WhatsApp" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://twitter.com/ambir513" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" width="24" height="24" style="vertical-align: middle;">
+            </a>
+          </div>
+          <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} DevTinder, All rights reserved.</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+    `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email send failed:", error);
+          return res
+            .status(500)
+            .json({ message: "Payment succeeded, but email failed to send." });
+        } else {
+          console.log("Payment confirmation email sent:", info.response);
+        }
+      });
+    }
+    if (req.body.event === "payment.failed") {
+      const { email: emailId } = req.body.payload.payment.entity;
+      const amount = req.body.payload.payment.entity.amount / 100; // convert paise to INR
+      const paymentId = req.body.payload.payment.entity.id;
+      const reason =
+        req.body.payload.payment.entity.error_reason || "Unknown reason";
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: emailId,
+        subject: "⚠️ Payment Failed - DevTinder Membership",
+        html: `
+  <div style="font-family: Arial, sans-serif; background-color: #f6f6f6;">
+    <table align="center" width="600" style="background-color: #ffffff; border-radius: 6px; overflow: hidden;">
+      <tr>
+        <td style="background-color: #242f3e; padding: 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0;">🧑‍💻 DevTinder</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 30px;">
+          <h2 style="color: #e63946;">Payment Failed</h2>
+          <p style="font-size: 16px; color: #555;">
+            Hello ${emailId},
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Unfortunately, your payment of <strong>₹${amount}</strong> could not be processed.
+          </p>
+          <p style="font-size: 14px; color: #555;">
+            <strong>Payment ID:</strong> ${paymentId}<br />
+            <strong>Reason:</strong> ${reason}
+          </p>
+          <p style="font-size: 14px; color: #777;">
+            This may happen due to insufficient funds, card issues, or technical glitches. Please try again using a different payment method.
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="https://thedevtinder.xyz/premium" style="background-color: #242f3e; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Retry Payment</a>
+          </div>
+          <p style="font-size: 14px; color: #777;">
+            If you believe this was an error, feel free to contact our support team.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #888; margin-bottom: 10px;">
+            Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
+          </p>
+          <div style="margin-bottom: 10px;">
+            <a href="https://linkedin.com/in/ambir513" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://wa.me/+918956817729" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/733/733585.png" alt="WhatsApp" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://twitter.com/ambir513" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" width="24" height="24" style="vertical-align: middle;">
+            </a>
+          </div>
+          <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} DevTinder, All rights reserved.</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+    `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Payment failure email send failed:", error);
+        } else {
+          console.log("Payment failure email sent:", info.response);
+        }
+      });
     }
 
-    // Compose Email
-    const amountINR = amount / 100;
-    const emailTemplate = {
-      from: process.env.EMAIL_USER,
-      to: emailId,
-      subject:
-        event === "payment.captured"
-          ? "🎉 Payment Successful - DevTinder Membership"
-          : "⚠️ Payment Failed - DevTinder Membership",
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #f6f6f6;">
-          <table align="center" width="600" style="background-color: #ffffff; border-radius: 6px;">
-            <tr>
-              <td style="background-color: #242f3e; padding: 20px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0;">🧑‍💻 DevTinder</h1>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 30px;">
-                <h2 style="color: ${
-                  event === "payment.captured" ? "#333" : "#e63946"
-                };">
-                  ${
-                    event === "payment.captured"
-                      ? "Payment Confirmed"
-                      : "Payment Failed"
-                  }
-                </h2>
-                <p style="font-size: 16px; color: #555;">Hello ${emailId},</p>
-                <p style="font-size: 16px; color: #555;">
-                  ${
-                    event === "payment.captured"
-                      ? `Thank you for your payment of <strong>₹${amountINR}</strong>! Your DevTinder membership is now active.`
-                      : `Unfortunately, your payment of <strong>₹${amountINR}</strong> failed.`
-                  }
-                </p>
-                <p style="font-size: 14px; color: #555;">
-                  <strong>Payment ID:</strong> ${paymentId}
-                  ${
-                    event === "payment.failed"
-                      ? `<br/><strong>Reason:</strong> ${
-                          error_reason || "Unknown reason"
-                        }`
-                      : ""
-                  }
-                </p>
-                ${
-                  event === "payment.failed"
-                    ? `
-                    <div style="text-align: center; margin: 20px 0;">
-                      <a href="https://thedevtinder.xyz/premium" style="background-color: #242f3e; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Retry Payment</a>
-                    </div>
-                    `
-                    : ""
-                }
-                <p style="font-size: 14px; color: #777;">
-                  ${
-                    event === "payment.captured"
-                      ? "You can now explore and connect with developers around the world. 🚀"
-                      : "Please try again using a different payment method or contact our support."
-                  }
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td style="background-color: #f0f0f0; padding: 20px; text-align: center;">
-                <p style="font-size: 12px; color: #888;">
-                  Need help? Contact <a href="mailto:support@thedevtinder.xyz">support@thedevtinder.xyz</a>
-                </p>
-                <div style="margin: 10px;">
-                  <a href="https://linkedin.com/in/ambir513" target="_blank"><img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" /></a>
-                  <a href="https://wa.me/+918956817729" target="_blank"><img src="https://cdn-icons-png.flaticon.com/24/733/733585.png" alt="WhatsApp" /></a>
-                  <a href="https://twitter.com/ambir513" target="_blank"><img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" /></a>
-                </div>
-                <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} DevTinder, All rights reserved.</p>
-              </td>
-            </tr>
-          </table>
-        </div>
-      `,
-    };
-
-    // Send Email
-    try {
-      await transporter.sendMail(emailTemplate);
-      console.log("✅ Email sent to:", emailId);
-    } catch (mailErr) {
-      console.error("❌ Failed to send email:", mailErr);
-    }
-
-    return res.status(200).json({ message: "Webhook processed successfully" });
+    return res.status(200).json({ message: "Webhook received successfully" });
   } catch (error) {
-    console.error("🔥 Webhook Error:", error.message);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: error.message });
   }
 };
 
