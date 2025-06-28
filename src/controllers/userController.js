@@ -29,22 +29,28 @@ const getAllRequest = async (req, res) => {
 const getAllConnection = async (req, res) => {
   try {
     const user = req.user;
+
+    if (!user || !user._id) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
     const getConnection = await ConnectionRequest.find({
       $or: [
-        { fromUserId: user?._id, status: "accepted" },
-        { toUserId: user?._id, status: "accepted" },
+        { fromUserId: user._id, status: "accepted" },
+        { toUserId: user._id, status: "accepted" },
       ],
     })
       .populate("fromUserId", USER_FIELDS)
       .populate("toUserId", USER_FIELDS);
 
     const data = getConnection.map((row) => {
-      if (row.fromUserId._id.toString() === user?._id.toString()) {
+      if (row.fromUserId._id.toString() === user._id.toString()) {
         return row.toUserId;
       }
       return row.fromUserId;
     });
-    res.json({ message: "Connection Request Successfully", data: data });
+
+    res.json({ message: "Connection Request Successfully", data });
   } catch (error) {
     res.status(400).send(error.message);
   }
