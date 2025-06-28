@@ -31,15 +31,15 @@ const getAllConnection = async (req, res) => {
     const user = req.user;
     const getConnection = await ConnectionRequest.find({
       $or: [
-        { fromUserId: user._id, status: "accepted" },
-        { toUserId: user._id, status: "accepted" },
+        { fromUserId: user?._id, status: "accepted" },
+        { toUserId: user?._id, status: "accepted" },
       ],
     })
       .populate("fromUserId", USER_FIELDS)
       .populate("toUserId", USER_FIELDS);
 
     const data = getConnection.map((row) => {
-      if (row.fromUserId._id.toString() === user._id.toString()) {
+      if (row.fromUserId._id.toString() === user?._id.toString()) {
         return row.toUserId;
       }
       return row.fromUserId;

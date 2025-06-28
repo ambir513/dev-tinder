@@ -39,6 +39,6 @@ connectDB()
       console.log("Server is running on PORT " + PORT);
     });
   })
-  .catch((err) => {
+  .catch((err) => {z
     console.log("Database could not be established");
   });
