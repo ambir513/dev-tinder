@@ -43,12 +43,17 @@ const getAllConnection = async (req, res) => {
       .populate("fromUserId", USER_FIELDS)
       .populate("toUserId", USER_FIELDS);
 
-    const data = getConnection.map((row) => {
-      if (row.fromUserId._id.toString() === user._id.toString()) {
-        return row.toUserId;
-      }
-      return row.fromUserId;
-    });
+    const data = getConnection
+      .map((row) => {
+        const fromUser = row.fromUserId;
+        const toUser = row.toUserId;
+        if (!fromUser || !toUser) return null;
+
+        return fromUser._id.toString() === user._id.toString()
+          ? toUser
+          : fromUser;
+      })
+      .filter(Boolean);
 
     res.json({ message: "Connection Request Successfully", data });
   } catch (error) {
