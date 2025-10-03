@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["https://thedevtinder.xyz", "https://books-aura.vercel.app"],
+    origin: ["https://thedevtinder.xyz", "https://www.thedevtinder.xyz", "https://books-aura.vercel.app"],
     credentials: true,
   })
 );
