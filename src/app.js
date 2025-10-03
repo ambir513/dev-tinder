@@ -17,10 +17,25 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["https://thedevtinder.xyz", "https://www.thedevtinder.xyz", "https://books-aura.vercel.app"],
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "https://thedevtinder.xyz",
+        "https://www.thedevtinder.xyz",
+        "https://books-aura.vercel.app",
+      ];
+      // allow requests with no origin (like curl or Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 require("./utils/cronjob.js");
 app.use("/", authRouter);
 app.use("/account", profileRouter);
