@@ -11,7 +11,7 @@ const initializeSocket = (server) => {
   const io = Socket(server, {
     path: "/api/socket.io",
     cors: {
-      origin: "https://thedevtinder.xyz",
+      origin: [ "https://thedevtinder.xyz",  "https://www.thedevtinder.xyz"],
       credentials: true,
     },
   });
